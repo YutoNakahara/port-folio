@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="ja" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yuto Nakahara | Aviation & Product Photography</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;300;400;600&family=Noto+Sans+JP:wght@200;300;400;500&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Montserrat', 'Noto Sans JP', 'sans-serif'],
+                    },
+                    colors: {
+                        dark: '#030303',
+                        surface: '#0f0f0f',
+                        subtle: '#1a1a1a',
+                        accent: '#ffffff',
+                    },
+                    letterSpacing: {
+                        'widest-xl': '0.2em',
+                        'widest-2xl': '0.3em',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Base Styling & Scrollbar */
+        body {
+            background-color: #030303;
+            color: #ffffff;
+            overflow-x: hidden;
+            cursor: none; 
+        }
+        
+        /* Mobile/Touch Fallback for Cursor */
+        @media (pointer: coarse) {
+            body { cursor: auto; }
+            #custom-cursor { display: none !important; }
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #030303; }
+        ::-webkit-scrollbar-thumb { background: #333; }
+
+        /* Custom Cursor Logic */
+        #custom-cursor {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 20px;
+            height: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            transition: width 0.3s cubic-bezier(0.25, 1, 0.5, 1), 
+                        height 0.3s cubic-bezier(0.25, 1, 0.5, 1), 
+                        background-color 0.3s ease,
+                        border-color 0.3s ease;
+            z-index: 9999;
+            mix-blend-mode: difference;
+        }
+        #custom-cursor.hovering {
+            width: 60px;
+            height: 60px;
+            background-color: rgba(255, 255, 255, 1);
+            border-color: transparent;
+        }
+
+        .reveal-blur {
+            opacity: 0;
+            filter: blur(12px);
+            transform: translateY(30px) scale(0.98);
+            transition: opacity 1.2s cubic-bezier(0.25, 1, 0.5, 1),
+                        filter 1.2s cubic-bezier(0.25, 1, 0.5, 1),
+                        transform 1.2s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        .reveal-blur.active {
+            opacity: 1;
+            filter: blur(0);
+            transform: translateY(0) scale(1);
+        }
+
+        /* Gallery Hover */
+        .gallery-img-wrapper { overflow: hidden; }
+        .gallery-img { transition: transform 1.5s cubic-bezier(0.25, 1, 0.5, 1); }
+        .gallery-item:hover .gallery-img { transform: scale(1.05); }
+        
+        .gallery-overlay {
+            background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 40%, rgba(0,0,0,0) 100%);
+            opacity: 0;
+            transition: opacity 0.8s ease;
+        }
+        .gallery-item:hover .gallery-overlay { opacity: 1; }
+        
+        .gallery-text {
+            transform: translateY(20px);
+            opacity: 0;
+            transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1) 0.1s;
+        }
+        .gallery-item:hover .gallery-text {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* Custom inputs for form */
+        input:-webkit-autofill,
+        textarea:-webkit-autofill {
+            -webkit-box-shadow: 0 0 0 30px #030303 inset !important;
+            -webkit-text-fill-color: white !important;
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-gray-800 selection:text-white">
+
+    <div id="custom-cursor"></div>
+
+    <nav class="fixed w-full z-50 transition-all duration-500 bg-transparent" id="navbar">
+        <div class="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
+            <div class="flex items-center justify-between h-20 md:h-24 border-b border-white/10">
+                <div class="flex-shrink-0 cursor-hover">
+                    <a href="#" class="text-base md:text-lg font-light tracking-widest-2xl text-white uppercase flex flex-col">
+                        <span>Yuto Nakahara</span>
+                    </a>
+                </div>
+                <!-- Mobile Menu Button (Hidden on Desktop) -->
+                <div class="md:hidden flex items-center">
+                    <button class="text-white focus:outline-none cursor-hover" aria-label="Menu" onclick="alert('Menu opened (Implement mobile drawer here)')">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+                    </button>
+                </div>
+                <!-- Desktop Links -->
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-12">
+                        <a href="#about" class="text-gray-400 hover:text-white text-xs tracking-widest-xl uppercase transition-colors cursor-hover">About</a>
+                        <a href="#aviation" class="text-gray-400 hover:text-white text-xs tracking-widest-xl uppercase transition-colors cursor-hover">Aviation</a>
+                        <a href="#product" class="text-gray-400 hover:text-white text-xs tracking-widest-xl uppercase transition-colors cursor-hover">Product</a>
+                        <a href="#contact" class="text-gray-400 hover:text-white text-xs tracking-widest-xl uppercase transition-colors cursor-hover">Contact</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <header class="relative h-[100svh] flex items-center justify-center overflow-hidden">
+        <!-- Parallax Background -->
+        <div class="absolute inset-0 z-0 h-[120%] -top-[10%]" id="hero-bg">
+            <div class="absolute inset-0 bg-gradient-to-b from-dark/60 via-dark/30 to-dark z-10"></div>
+            <!-- Main Hero Image: ANA Red Beacon -->
+            <img src="R7011172.jpg" alt="Aviation Photography by Yuto Nakahara" class="w-full h-full object-cover object-center" onerror="this.src='https://via.placeholder.com/1920x1080/0a0a0a/333333?text=Hero+Image'">
+        </div>
+        
+        <!-- Hero Content -->
+        <div class="relative z-20 text-center px-4 w-full flex flex-col items-center mt-20 reveal-blur">
+            <p class="text-gray-400 text-xs md:text-sm tracking-widest-2xl uppercase mb-6 font-light">Photographer</p>
+            <h1 class="text-5xl md:text-7xl lg:text-8xl font-light text-white tracking-widest-xl uppercase mb-2">
+                Yuto<br class="md:hidden"> Nakahara
+            </h1>
+            <p class="text-xl md:text-2xl text-gray-400 font-light tracking-[0.4em] mb-12 font-['Noto_Sans_JP'] mt-4">
+                中原 佑都
+            </p>
+            
+            <div class="w-px h-16 md:h-24 bg-gradient-to-b from-white/50 to-transparent mx-auto mb-12"></div>
+            
+            <p class="text-xs md:text-sm text-gray-300 tracking-widest-xl uppercase font-light">
+                Aviation & Product Photography
+            </p>
+        </div>
+    </header>
+
+    <section id="about" class="py-24 md:py-32 bg-dark">
+        <div class="max-w-4xl mx-auto px-6 sm:px-8 lg:px-12 text-center reveal-blur">
+            <h2 class="text-xs md:text-sm font-light uppercase tracking-widest-2xl mb-12 md:mb-16 text-gray-500">The Vision</h2>
+            
+            <div class="space-y-8 md:space-y-10 text-gray-300 font-light leading-[2.2] text-sm md:text-base text-left md:text-justify font-['Noto_Sans_JP'] mx-auto max-w-2xl">
+                <p>
+                    闇に溶け込む鋼鉄の機体、その静寂を切り裂くアンチコリジョンライトの閃光。<br class="hidden md:block">
+                    私のレンズが捉えるのは、昼間の空では決して見ることのできない、航空機が放つ圧倒的な「生命力」と「重厚感」です。
+                </p>
+                <p>
+                    夜の空港は、光と影が交差する巨大な舞台。
+                    極限の集中力で機体の軌跡を追い、一瞬の美しさを永遠に定着させる。
+                    その研ぎ澄まされた感覚と、光を操る技術は、無機質なプロダクトに命を吹き込む商品撮影においても私の最大の武器となっています。
+                </p>
+                <p>
+                    学生という枠に囚われず、常に妥協なきクオリティを追求し続ける。
+                    あなたの心を揺さぶる、究極の1枚を創り出します。
+                </p>
+            </div>
+            
+            <div class="mt-16 md:mt-20 flex flex-col items-center">
+                <div class="w-px h-12 bg-gray-800 mb-8"></div>
+                <p class="text-white tracking-widest-xl uppercase text-sm font-light">Yuto Nakahara</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="aviation" class="py-24 md:py-32 bg-surface">
+        <div class="max-w-[90rem] mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="mb-16 md:mb-24 px-4 reveal-blur flex flex-col md:flex-row md:items-end md:justify-between border-b border-white/10 pb-8 md:pb-12">
+                <div>
+                    <h2 class="text-3xl md:text-5xl font-light uppercase tracking-widest-xl text-white mb-4">Aviation</h2>
+                    <p class="text-gray-500 font-light tracking-widest text-xs md:text-sm uppercase">Nightscapes & Dynamics</p>
+                </div>
+                <p class="text-gray-400 font-['Noto_Sans_JP'] text-xs md:text-sm font-light mt-6 md:mt-0 tracking-widest">
+                    光と影が織りなす、夜空の造形美
+                </p>
+            </div>
+
+            <!-- Breathtaking Grid Layout -->
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-4">
+                
+                <!-- Image 1: Feature (Spans 8 cols) -->
+                <a href="#" class="gallery-item cursor-hover block group relative col-span-1 md:col-span-8 aspect-[4/3] md:aspect-auto md:h-[600px] reveal-blur gallery-img-wrapper" data-src="R7010548-Topaz-Sharpen-Auto-Denoise.jpg">
+                    <img src="R7010548-Topaz-Sharpen-Auto-Denoise.jpg" alt="A380 Emirates Night Approach" class="gallery-img w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/1200x800/111/444?text=Emirates+A380'">
+                    <div class="gallery-overlay absolute inset-0 flex flex-col justify-end p-6 md:p-12">
+                        <div class="gallery-text">
+                            <span class="text-gray-400 text-[10px] md:text-xs tracking-widest-2xl uppercase mb-2 md:mb-3 block font-light">Final Approach</span>
+                            <h3 class="text-xl md:text-3xl text-white font-light tracking-widest">Giant in the Dark</h3>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Image 2: Vertical (Spans 4 cols) -->
+                <a href="#" class="gallery-item cursor-hover block group relative col-span-1 md:col-span-4 aspect-[4/3] md:aspect-auto md:h-[600px] reveal-blur gallery-img-wrapper" style="transition-delay: 100ms;" data-src="R7120700-2.jpg">
+                    <img src="R7120700-2.jpg" alt="Blue Impulse Formation" class="gallery-img w-full h-full object-cover object-center" onerror="this.src='https://via.placeholder.com/800x1000/111/444?text=Blue+Impulse'">
+                    <div class="gallery-overlay absolute inset-0 flex flex-col justify-end p-6 md:p-12">
+                        <div class="gallery-text">
+                            <span class="text-gray-400 text-[10px] md:text-xs tracking-widest-2xl uppercase mb-2 md:mb-3 block font-light">Daylight Dynamics</span>
+                            <h3 class="text-lg md:text-2xl text-white font-light tracking-widest">Blue Impulse</h3>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Image 3: Square-ish (Spans 5 cols) -->
+                <a href="#" class="gallery-item cursor-hover block group relative col-span-1 md:col-span-5 aspect-[4/3] md:aspect-auto md:h-[500px] reveal-blur gallery-img-wrapper" data-src="R7011172.jpg">
+                    <img src="R7011172.jpg" alt="ANA A380 Red Beacon" class="gallery-img w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/800x600/111/444?text=ANA+HONU'">
+                    <div class="gallery-overlay absolute inset-0 flex flex-col justify-end p-6 md:p-12">
+                        <div class="gallery-text">
+                            <span class="text-gray-400 text-[10px] md:text-xs tracking-widest-2xl uppercase mb-2 md:mb-3 block font-light">Crimson Flash</span>
+                            <h3 class="text-lg md:text-xl text-white font-light tracking-widest">HONU Silhouette</h3>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Image 4: Panning shot (Spans 7 cols) -->
+                <a href="#" class="gallery-item cursor-hover block group relative col-span-1 md:col-span-7 aspect-[4/3] md:aspect-auto md:h-[500px] reveal-blur gallery-img-wrapper" style="transition-delay: 100ms;" data-src="R8415488.jpg">
+                    <img src="R8415488.jpg" alt="ANA 787 Panning Night" class="gallery-img w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/1200x600/111/444?text=ANA+787+Panning'">
+                    <div class="gallery-overlay absolute inset-0 flex flex-col justify-end p-6 md:p-12">
+                        <div class="gallery-text">
+                            <span class="text-gray-400 text-[10px] md:text-xs tracking-widest-2xl uppercase mb-2 md:mb-3 block font-light">Panning Shot</span>
+                            <h3 class="text-xl md:text-2xl text-white font-light tracking-widest">Velocity of Light</h3>
+                        </div>
+                    </div>
+                </a>
+
+            </div>
+        </div>
+    </section>
+
+    <section id="product" class="py-24 md:py-32 bg-dark">
+        <div class="max-w-[90rem] mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="mb-16 md:mb-24 px-4 text-center reveal-blur">
+                <h2 class="text-3xl md:text-5xl font-light uppercase tracking-widest-xl text-white mb-6">Product</h2>
+                <p class="text-gray-500 font-light tracking-widest text-xs md:text-sm uppercase">Commercial & Still Life</p>
+                <div class="w-px h-12 md:h-16 bg-gray-800 mx-auto mt-8 mb-8"></div>
+                <p class="text-gray-400 font-['Noto_Sans_JP'] text-sm font-light tracking-wider max-w-2xl mx-auto leading-loose text-left md:text-center px-2">
+                    航空機撮影で培ったシビアな露出制御と、被写体の持つ質感を極限まで引き出すライティング。<br class="hidden md:block">
+                    時計、ジュエリー、ガジェットなど、高級感と重厚感が求められるプロダクト撮影をご提供します。
+                </p>
+            </div>
+
+            <!-- Product Grid (Minimalist) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4 px-0 md:px-4">
+                
+                <a href="#" class="gallery-item cursor-hover group relative aspect-[4/5] reveal-blur gallery-img-wrapper bg-subtle block" data-src="https://placehold.co/1200x1500/0a0a0a/333333?text=Timepiece">
+                    <img src="https://placehold.co/800x1000/0a0a0a/333333?text=Product+01" alt="Product 1" class="gallery-img w-full h-full object-cover mix-blend-luminosity opacity-80 group-hover:opacity-100 group-hover:mix-blend-normal transition-all duration-700">
+                    <div class="gallery-overlay absolute inset-0 flex flex-col justify-end p-8">
+                        <div class="gallery-text">
+                            <h3 class="text-base md:text-lg text-white font-light tracking-widest uppercase">Timepiece Collection</h3>
+                            <p class="text-gray-500 text-[10px] md:text-xs mt-2 font-['Noto_Sans_JP']">金属の質感と陰影</p>
+                        </div>
+                    </div>
+                </a>
+
+                <a href="#" class="gallery-item cursor-hover group relative aspect-[4/5] reveal-blur gallery-img-wrapper bg-subtle block" style="transition-delay: 150ms;" data-src="https://placehold.co/1200x1500/0f0f0f/444444?text=Tech">
+                    <img src="https://placehold.co/800x1000/0f0f0f/444444?text=Product+02" alt="Product 2" class="gallery-img w-full h-full object-cover mix-blend-luminosity opacity-80 group-hover:opacity-100 group-hover:mix-blend-normal transition-all duration-700">
+                    <div class="gallery-overlay absolute inset-0 flex flex-col justify-end p-8">
+                        <div class="gallery-text">
+                            <h3 class="text-base md:text-lg text-white font-light tracking-widest uppercase">Tech Hardware</h3>
+                            <p class="text-gray-500 text-[10px] md:text-xs mt-2 font-['Noto_Sans_JP']">洗練されたフォルムの強調</p>
+                        </div>
+                    </div>
+                </a>
+
+                <a href="#" class="gallery-item cursor-hover group relative aspect-[4/5] sm:col-span-2 lg:col-span-1 reveal-blur gallery-img-wrapper bg-subtle block" style="transition-delay: 300ms;" data-src="https://placehold.co/1200x1500/080808/222222?text=Liquid">
+                    <img src="https://placehold.co/800x1000/080808/222222?text=Product+03" alt="Product 3" class="gallery-img w-full h-full object-cover mix-blend-luminosity opacity-80 group-hover:opacity-100 group-hover:mix-blend-normal transition-all duration-700">
+                    <div class="gallery-overlay absolute inset-0 flex flex-col justify-end p-8">
+                        <div class="gallery-text">
+                            <h3 class="text-base md:text-lg text-white font-light tracking-widest uppercase">Liquid & Glass</h3>
+                            <p class="text-gray-500 text-[10px] md:text-xs mt-2 font-['Noto_Sans_JP']">透過光が魅せる透明感</p>
+                        </div>
+                    </div>
+                </a>
+
+            </div>
+        </div>
+    </section>
+
+    <section id="contact" class="py-24 md:py-32 bg-surface">
+        <div class="max-w-4xl mx-auto px-6 sm:px-8 lg:px-12 text-center reveal-blur">
+            <h2 class="text-xs md:text-sm font-light uppercase tracking-widest-2xl mb-8 md:mb-12 text-gray-500">Get in Touch</h2>
+            <h3 class="text-3xl md:text-4xl font-light text-white tracking-widest-xl uppercase mb-8">Contact</h3>
+            
+            <p class="text-gray-400 font-['Noto_Sans_JP'] text-sm font-light leading-loose mb-12">
+                撮影のご依頼、写真展に関するお問い合わせは<br class="hidden md:block">
+                下記のフォーム、またはSNSよりお気軽にご連絡ください。
+            </p>
+
+            <!-- Deployment Ready Form (Replace action with Formspree Endpoint) -->
+            <form action="https://formspree.io/f/your_form_id_here" method="POST" class="max-w-2xl mx-auto space-y-10 text-left mb-16">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10">
+                    <div class="relative group">
+                        <label for="name" class="block text-[10px] tracking-widest-xl uppercase text-gray-500 mb-2 transition-colors group-focus-within:text-white">Name</label>
+                        <input type="text" id="name" name="name" required class="w-full bg-transparent border-b border-white/20 text-white pb-2 focus:outline-none focus:border-white transition-colors font-light text-sm cursor-hover">
+                    </div>
+                    <div class="relative group">
+                        <label for="email" class="block text-[10px] tracking-widest-xl uppercase text-gray-500 mb-2 transition-colors group-focus-within:text-white">Email</label>
+                        <input type="email" id="email" name="email" required class="w-full bg-transparent border-b border-white/20 text-white pb-2 focus:outline-none focus:border-white transition-colors font-light text-sm cursor-hover">
+                    </div>
+                </div>
+                <div class="relative group">
+                    <label for="message" class="block text-[10px] tracking-widest-xl uppercase text-gray-500 mb-2 transition-colors group-focus-within:text-white">Message</label>
+                    <textarea id="message" name="message" rows="4" required class="w-full bg-transparent border-b border-white/20 text-white pb-2 focus:outline-none focus:border-white transition-colors font-light text-sm resize-none cursor-hover"></textarea>
+                </div>
+                <div class="text-center pt-4">
+                    <button type="submit" class="inline-block px-12 py-4 bg-white text-black text-xs tracking-widest-xl uppercase hover:bg-gray-300 transition-colors duration-300 cursor-hover">
+                        Send Message
+                    </button>
+                </div>
+            </form>
+
+            <div class="flex flex-col md:flex-row justify-center items-center space-y-6 md:space-y-0 md:space-x-12">
+                <a href="#" class="cursor-hover group flex flex-col items-center">
+                    <span class="text-white text-base md:text-lg font-light tracking-wider border-b border-transparent group-hover:border-white transition-colors pb-1">@yuto_aviation</span>
+                    <span class="text-gray-600 text-[10px] tracking-widest uppercase mt-2">Instagram</span>
+                </a>
+                <div class="hidden md:block w-px h-8 bg-gray-800"></div>
+                <a href="#" class="cursor-hover group flex flex-col items-center">
+                    <span class="text-white text-base md:text-lg font-light tracking-wider border-b border-transparent group-hover:border-white transition-colors pb-1">@yuto_photo</span>
+                    <span class="text-gray-600 text-[10px] tracking-widest uppercase mt-2">X / Twitter</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark py-12 border-t border-white/5">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col items-center">
+            <a href="#" class="text-xl font-light tracking-widest-2xl text-white uppercase mb-6 cursor-hover">YN.</a>
+            <p class="text-gray-600 text-[10px] tracking-widest uppercase font-light">
+                &copy; <span id="year"></span> Yuto Nakahara. All Rights Reserved.
+            </p>
+        </div>
+    </footer>
+
+    <!-- Fullscreen Lightbox for Gallery -->
+    <div id="lightbox" class="fixed inset-0 z-[100] bg-black/95 opacity-0 pointer-events-none transition-opacity duration-500 flex items-center justify-center p-4 md:p-12">
+        <button id="lightbox-close" class="absolute top-6 right-6 md:top-10 md:right-10 text-white/50 hover:text-white transition-colors cursor-hover p-4 z-[101]" aria-label="Close Lightbox">
+            <svg class="w-8 h-8 md:w-10 md:h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+        <!-- Loading Spinner inside lightbox -->
+        <div id="lightbox-loader" class="absolute inset-0 flex items-center justify-center pointer-events-none text-white/20">
+            <svg class="animate-spin h-8 w-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+        </div>
+        <img id="lightbox-img" src="" alt="Full screen preview" class="relative z-[102] max-w-full max-h-full object-contain transform scale-95 transition-transform duration-500 shadow-2xl opacity-0">
+    </div>
+
+    <script>
+        // 1. Dynamic Footer Year
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        // 2. Custom Cursor Logic (Only for non-touch devices)
+        const cursor = document.getElementById('custom-cursor');
+        const isTouchDevice = window.matchMedia("(pointer: coarse)").matches;
+
+        if (!isTouchDevice) {
+            document.addEventListener('mousemove', (e) => {
+                cursor.style.left = e.clientX + 'px';
+                cursor.style.top = e.clientY + 'px';
+            });
+
+            const setupCursorHover = () => {
+                const hoverElements = document.querySelectorAll('.cursor-hover, a, button, .gallery-item, input, textarea');
+                hoverElements.forEach(el => {
+                    // Prevent multiple bindings
+                    el.removeEventListener('mouseenter', addHoverState);
+                    el.removeEventListener('mouseleave', removeHoverState);
+                    
+                    el.addEventListener('mouseenter', addHoverState);
+                    el.addEventListener('mouseleave', removeHoverState);
+                });
+            };
+
+            const addHoverState = () => cursor.classList.add('hovering');
+            const removeHoverState = () => cursor.classList.remove('hovering');
+
+            setupCursorHover();
+        }
+
+        // 3. Navbar Glassmorphism on Scroll
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('bg-dark/90', 'backdrop-blur-md');
+                navbar.classList.remove('bg-transparent');
+            } else {
+                navbar.classList.remove('bg-dark/90', 'backdrop-blur-md');
+                navbar.classList.add('bg-transparent');
+            }
+        });
+
+        // 4. Parallax Effect for Hero Background
+        const heroBg = document.getElementById('hero-bg');
+        window.addEventListener('scroll', () => {
+            const scrollY = window.scrollY;
+            if (scrollY < window.innerHeight) {
+                heroBg.style.transform = `translateY(${scrollY * 0.4}px)`;
+            }
+        });
+
+        // 5. Cinematic Reveal Animation (Intersection Observer)
+        const revealOptions = {
+            root: null,
+            rootMargin: '0px 0px -100px 0px',
+            threshold: 0.15
+        };
+
+        const revealObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, revealOptions);
+
+        document.querySelectorAll('.reveal-blur').forEach(el => {
+            revealObserver.observe(el);
+        });
+
+        // 6. Lightbox Functionality
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImg = document.getElementById('lightbox-img');
+        const lightboxCloseBtn = document.getElementById('lightbox-close');
+        const lightboxLoader = document.getElementById('lightbox-loader');
+        
+        document.querySelectorAll('.gallery-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                // Get high-res image src from data-src attribute if available, else fallback to standard src
+                const imgSrc = item.getAttribute('data-src') || item.querySelector('img').src;
+                
+                // Show Lightbox overlay
+                lightbox.classList.remove('opacity-0', 'pointer-events-none');
+                lightbox.classList.add('opacity-100', 'pointer-events-auto');
+                document.body.style.overflow = 'hidden'; // Prevent background scrolling
+                
+                // Reset image state for loading
+                lightboxImg.classList.remove('opacity-100', 'scale-100');
+                lightboxImg.classList.add('opacity-0', 'scale-95');
+                lightboxLoader.style.display = 'flex';
+
+                // Load image
+                lightboxImg.src = imgSrc;
+                lightboxImg.onload = () => {
+                    lightboxLoader.style.display = 'none';
+                    lightboxImg.classList.remove('opacity-0', 'scale-95');
+                    lightboxImg.classList.add('opacity-100', 'scale-100');
+                };
+            });
+        });
+        
+        const closeLightbox = () => {
+            lightbox.classList.remove('opacity-100', 'pointer-events-auto');
+            lightbox.classList.add('opacity-0', 'pointer-events-none');
+            lightboxImg.classList.remove('opacity-100', 'scale-100');
+            lightboxImg.classList.add('opacity-0', 'scale-95');
+            document.body.style.overflow = ''; // Restore background scrolling
+            
+            // Clear src after fade out to prevent visual glitches on next open
+            setTimeout(() => {
+                lightboxImg.src = '';
+            }, 500);
+        };
+        
+        lightboxCloseBtn.addEventListener('click', closeLightbox);
+        
+        // Close on background click
+        lightbox.addEventListener('click', (e) => {
+            if(e.target === lightbox) {
+                closeLightbox();
+            }
+        });
+        
+        // Close on Escape key
+        document.addEventListener('keydown', (e) => {
+            if(e.key === 'Escape' && lightbox.classList.contains('opacity-100')) {
+                closeLightbox();
+            }
+        });
+    </script>
+</body>
+</html>
