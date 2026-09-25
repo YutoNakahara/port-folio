@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YUTO NAKAHARA | Aviation & Product Photographer</title>
+    
+    <!-- Google Fonts: 英語はOswaldとMontserrat、日本語はNoto Sans JPで極限までスタイリッシュに -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;400;700&family=Noto+Sans+JP:wght@200;400;700&family=Oswald:wght@300;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS (スタイリング用) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- GSAP & ScrollTrigger (世界最高峰のアニメーションライブラリ) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <style>
+        /* カスタム設定 */
+        :root {
+            --bg-color: #030303;
+            --text-color: #f5f5f5;
+            --accent-color: #ff3333; /* 航空機のアンチコリジョンライトを意識した赤 */
+        }
+        
+        body, html {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Montserrat', sans-serif;
+            overflow-x: hidden;
+            cursor: none; /* デフォルトカーソルを非表示 */
+        }
+
+        .jp-text {
+            font-family: 'Noto Sans JP', sans-serif;
+            letter-spacing: 0.1em;
+        }
+
+        .oswald {
+            font-family: 'Oswald', sans-serif;
+            text-transform: uppercase;
+        }
+
+        /* カスタムカーソル (ブレンドモードで背景を反転させる) */
+        .cursor-dot, .cursor-outline {
+            position: fixed;
+            top: 0;
+            left: 0;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            z-index: 9999;
+            pointer-events: none;
+        }
+        .cursor-dot {
+            width: 8px;
+            height: 8px;
+            background-color: white;
+            mix-blend-mode: difference;
+        }
+        .cursor-outline {
+            width: 40px;
+            height: 40px;
+            border: 1px solid rgba(255,255,255,0.5);
+            transition: width 0.3s, height 0.3s, background-color 0.3s;
+            mix-blend-mode: difference;
+        }
+        /* ホバー時のカーソル拡張 */
+        .cursor-hover .cursor-outline {
+            width: 80px;
+            height: 80px;
+            background-color: rgba(255,255,255,0.1);
+            backdrop-filter: blur(2px);
+        }
+        /* スマホではカスタムカーソルを隠す */
+        @media (pointer: coarse) {
+            body { cursor: auto; }
+            .cursor-dot, .cursor-outline { display: none; }
+        }
+
+        /* ローディングスクリーン */
+        #loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #000;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .counter {
+            font-size: 5vw;
+            font-weight: 700;
+            color: white;
+            opacity: 0;
+        }
+
+        /* ヒーローセクション（ファーストビュー） */
+        .hero {
+            position: relative;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+        }
+        .hero-img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 120%; /* パララックス用に少し大きく */
+            object-fit: cover;
+            opacity: 0.6;
+            transform: scale(1.1);
+        }
+        .hero-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, #030303 0%, rgba(3,3,3,0) 50%, rgba(3,3,3,0.5) 100%);
+        }
+        .hero-title {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            width: 100%;
+        }
+        .hero-title h1 {
+            font-size: clamp(3rem, 10vw, 8rem);
+            line-height: 1;
+            letter-spacing: -0.02em;
+            clip-path: polygon(0 100%, 100% 100%, 100% 100%, 0% 100%); /* アニメーション用 */
+        }
+        .hero-title p {
+            font-size: clamp(0.8rem, 2vw, 1.5rem);
+            letter-spacing: 0.4em;
+            margin-top: 20px;
+            opacity: 0;
+        }
+
+        /* パララックス＆画像マスクエフェクト */
+        .reveal-wrap {
+            position: relative;
+            overflow: hidden;
+        }
+        .reveal-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scale(1.2); /* 最初は少し拡大しておく */
+        }
+
+        /* スクロールマーキー (流れる文字) */
+        .marquee {
+            width: 100%;
+            overflow: hidden;
+            white-space: nowrap;
+            background: var(--text-color);
+            color: var(--bg-color);
+            padding: 1.5rem 0;
+        }
+        .marquee-content {
+            display: inline-block;
+            font-size: 2rem;
+            font-weight: 700;
+            animation: marquee 20s linear infinite;
+        }
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        /* リンクのアニメーション */
+        .hover-link {
+            position: relative;
+            display: inline-block;
+        }
+        .hover-link::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            transform: scaleX(0);
+            height: 1px;
+            bottom: 0;
+            left: 0;
+            background-color: currentColor;
+            transform-origin: bottom right;
+            transition: transform 0.4s cubic-bezier(0.86, 0, 0.07, 1);
+        }
+        .hover-link:hover::after {
+            transform: scaleX(1);
+            transform-origin: bottom left;
+        }
+        
+        /* セクション共通 */
+        .section-title {
+            font-size: clamp(2rem, 5vw, 4rem);
+            margin-bottom: 2rem;
+            color: #fff;
+        }
+        .text-outline {
+            color: transparent;
+            -webkit-text-stroke: 1px rgba(255,255,255,0.3);
+        }
+
+        /* スタイリッシュなノイズ背景（質感アップ） */
+        .noise {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 9998;
+            opacity: 0.03;
+            background: url('data:image/svg+xml;utf8,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noiseFilter"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noiseFilter)"/%3E%3C/svg%3E');
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- ノイズテクスチャ（シネマティックな質感用） -->
+    <div class="noise"></div>
+
+    <!-- カスタムカーソル -->
+    <div class="cursor-dot"></div>
+    <div class="cursor-outline"></div>
+
+    <!-- ローディングスクリーン -->
+    <div id="loader">
+        <div class="oswald counter">0%</div>
+    </div>
+
+    <!-- ナビゲーション -->
+    <nav class="fixed top-0 w-full p-6 flex justify-between items-center z-50 mix-blend-difference text-white">
+        <a href="#" class="oswald font-bold text-xl tracking-widest hover-trigger">YN.</a>
+        <div class="flex gap-6 text-sm tracking-widest oswald">
+            <a href="#work" class="hover-link hover-trigger">WORK</a>
+            <a href="#about" class="hover-link hover-trigger">ABOUT</a>
+            <a href="#contact" class="hover-link hover-trigger">CONTACT</a>
+        </div>
+    </nav>
+
+    <!-- ヒーローセクション -->
+    <header class="hero">
+        <!-- 背景写真：最高にドラマチックな赤い光のA380 -->
+        <img src="R7011172.jpg" alt="A380 Night Photography" class="hero-img" id="heroImg">
+        <div class="hero-overlay"></div>
+        <div class="hero-title">
+            <h1 class="oswald text-white font-bold tracking-tighter" id="heroTitle">YUTO NAKAHARA</h1>
+            <p class="oswald font-light text-gray-300" id="heroSub">AVIATION & PRODUCT PHOTOGRAPHY</p>
+        </div>
+    </header>
+
+    <!-- マーキー（流れる文字） -->
+    <div class="marquee oswald">
+        <div class="marquee-content">
+            NIGHT AVIATION PHOTOGRAPHY - TOKYO BASE - COMMERCIAL PRODUCT SHOTS - HIGH-END RETOUCHING - NIGHT AVIATION PHOTOGRAPHY - TOKYO BASE - COMMERCIAL PRODUCT SHOTS - HIGH-END RETOUCHING -
+        </div>
+    </div>
+
+    <!-- About / Concept Section -->
+    <section id="about" class="py-32 px-6 md:px-20 max-w-7xl mx-auto">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+            <div class="reveal-text">
+                <h2 class="oswald section-title leading-none">CAPTURING<br><span class="text-outline">THE UNSEEN</span></h2>
+                <p class="jp-text text-gray-400 leading-relaxed font-light mt-6">
+                    光が織りなす一瞬のドラマ。暗闇に浮かび上がる機体の重厚感、そして製品が持つ本来の美しさ。<br><br>
+                    夜の航空写真をメインに、アンチコリジョンライトの反射や流し撮りなど、シネマティックで幻想的な瞬間を切り取ります。
+                    また、その緻密な光のコントロール技術を活かし、コマーシャル向けの高品質な商品撮影（プロダクトフォトグラフィー）も手がけています。
+                </p>
+            </div>
+            <div class="reveal-wrap aspect-[4/5] hover-trigger w-full max-w-md mx-auto">
+                <!-- サブビジュアル：ブルーインパルス -->
+                <img src="R7120700-2.jpg" alt="Blue Impulse" class="reveal-img object-cover w-full h-full">
+            </div>
+        </div>
+    </section>
+
+    <!-- ギャラリーセクション (Aviation) -->
+    <section id="work" class="py-20 px-6 md:px-10">
+        <div class="mb-16">
+            <h2 class="oswald section-title mb-2">AVIATION <span class="text-outline">ARCHIVE</span></h2>
+            <div class="h-[1px] w-full bg-gray-800"></div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+            <!-- 写真1: エミレーツ A380 -->
+            <div class="reveal-wrap h-[50vh] md:h-[70vh] hover-trigger overflow-hidden group">
+                <img src="R7010548-Topaz-Sharpen-Auto-Denoise.jpg" alt="Emirates A380" class="reveal-img group-hover:scale-105 transition-transform duration-1000">
+                <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-8">
+                    <span class="oswald text-2xl tracking-widest text-white">EMIRATES A380 / NIGHT SHOT</span>
+                </div>
+            </div>
+            
+            <!-- 写真2: 流し撮り -->
+            <div class="reveal-wrap h-[50vh] md:h-[70vh] hover-trigger overflow-hidden group md:mt-20">
+                <img src="R8415488.jpg" alt="ANA B787 Panning Shot" class="reveal-img group-hover:scale-105 transition-transform duration-1000">
+                <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-8">
+                    <span class="oswald text-2xl tracking-widest text-white">PANNING SHOT / TOKYO</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- プロダクト写真セクション (Commercial) -->
+    <section class="py-32 px-6 md:px-10 bg-[#0a0a0a]">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="oswald section-title text-center mb-16">COMMERCIAL <span class="text-outline">PRODUCT</span></h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- プロダクト用のプレースホルダー。写真が用意できたら src="あなたの写真.jpg" に変更 -->
+                <div class="reveal-wrap aspect-square bg-[#111] hover-trigger group overflow-hidden flex justify-center items-center">
+                    <span class="oswald text-gray-600 tracking-widest group-hover:text-white transition-colors duration-500">COMING SOON</span>
+                </div>
+                <div class="reveal-wrap aspect-square bg-[#111] hover-trigger group overflow-hidden flex justify-center items-center">
+                    <span class="oswald text-gray-600 tracking-widest group-hover:text-white transition-colors duration-500">COMING SOON</span>
+                </div>
+                <div class="reveal-wrap aspect-square bg-[#111] hover-trigger group overflow-hidden flex justify-center items-center">
+                    <span class="oswald text-gray-600 tracking-widest group-hover:text-white transition-colors duration-500">COMING SOON</span>
+                </div>
+            </div>
+            <p class="jp-text text-center text-gray-400 mt-12 font-light text-sm">
+                金属の質感、ガラスの反射、美しい陰影。航空撮影で培ったライティング技術を駆使し、商品の魅力を最大限に引き出します。
+            </p>
+        </div>
+    </section>
+
+    <!-- フッター / コンタクト -->
+    <footer id="contact" class="py-32 px-6 bg-black relative overflow-hidden">
+        <div class="max-w-7xl mx-auto text-center relative z-10">
+            <h2 class="oswald text-[15vw] md:text-[8vw] font-bold leading-none text-white opacity-90 mb-10">LET'S WORK</h2>
+            
+            <div class="flex flex-col md:flex-row justify-center gap-10 mt-10">
+                <!-- X (Twitter) リンク -->
+                <a href="https://x.com/Nakayu913" target="_blank" class="hover-trigger group">
+                    <div class="oswald text-2xl tracking-widest text-gray-400 group-hover:text-white transition-colors flex flex-col items-center">
+                        <span class="text-sm text-gray-600 mb-1">X (TWITTER)</span>
+                        @Nakayu913
+                        <div class="h-[1px] w-0 bg-white group-hover:w-full transition-all duration-300 mt-1"></div>
+                    </div>
+                </a>
+                
+                <!-- Instagram リンク -->
+                <a href="https://instagram.com/Nakayu913" target="_blank" class="hover-trigger group">
+                    <div class="oswald text-2xl tracking-widest text-gray-400 group-hover:text-white transition-colors flex flex-col items-center">
+                        <span class="text-sm text-gray-600 mb-1">INSTAGRAM</span>
+                        @Nakayu913
+                        <div class="h-[1px] w-0 bg-white group-hover:w-full transition-all duration-300 mt-1"></div>
+                    </div>
+                </a>
+            </div>
+            
+            <div class="mt-32 border-t border-gray-800 pt-8 flex justify-between items-center text-gray-500 text-sm oswald tracking-widest flex-col md:flex-row gap-4">
+                <p>&copy; 2026 YUTO NAKAHARA. ALL RIGHTS RESERVED.</p>
+                <p>TOKYO, JAPAN</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- インタラクション＆アニメーション用スクリプト -->
+    <script>
+        // カスタムカーソルの動き
+        const cursorDot = document.querySelector('.cursor-dot');
+        const cursorOutline = document.querySelector('.cursor-outline');
+        const hoverTriggers = document.querySelectorAll('.hover-trigger');
+
+        window.addEventListener('mousemove', (e) => {
+            const posX = e.clientX;
+            const posY = e.clientY;
+            
+            // ドットは即座に追従
+            cursorDot.style.left = `${posX}px`;
+            cursorDot.style.top = `${posY}px`;
+            
+            // アウトラインは少し遅れて追従 (スムーズ効果)
+            cursorOutline.animate({
+                left: `${posX}px`,
+                top: `${posY}px`
+            }, { duration: 500, fill: "forwards" });
+        });
+
+        // リンクや画像ホバー時のカーソルアクション
+        hoverTriggers.forEach(trigger => {
+            trigger.addEventListener('mouseenter', () => {
+                document.body.classList.add('cursor-hover');
+            });
+            trigger.addEventListener('mouseleave', () => {
+                document.body.classList.remove('cursor-hover');
+            });
+        });
+
+        // GSAP アニメーション設定
+        gsap.registerPlugin(ScrollTrigger);
+
+        // 1. ローディングアニメーション
+        let counterValue = { val: 0 };
+        gsap.to(counterValue, {
+            val: 100,
+            duration: 2,
+            ease: "power4.inOut",
+            onUpdate: function() {
+                document.querySelector('.counter').innerHTML = Math.round(counterValue.val) + "%";
+                document.querySelector('.counter').style.opacity = 1;
+            },
+            onComplete: function() {
+                // ローダーを上にスライドアウト
+                gsap.to("#loader", {
+                    yPercent: -100,
+                    duration: 1,
+                    ease: "expo.inOut"
+                });
+                // ヒーローテキストの出現
+                gsap.to("#heroTitle", {
+                    clipPath: "polygon(0 0, 100% 0, 100% 100%, 0% 100%)",
+                    duration: 1.5,
+                    delay: 0.5,
+                    ease: "power4.out"
+                });
+                gsap.to("#heroSub", {
+                    opacity: 1,
+                    y: 0,
+                    duration: 1.5,
+                    delay: 1,
+                    ease: "power3.out"
+                });
+            }
+        });
+
+        // 2. ヒーロー画像のパララックス (スクロールすると少し下がる)
+        gsap.to("#heroImg", {
+            yPercent: 30,
+            ease: "none",
+            scrollTrigger: {
+                trigger: ".hero",
+                start: "top top",
+                end: "bottom top",
+                scrub: true
+            }
+        });
+
+        // 3. 画像の出現エフェクト（スクロール連動）
+        const revealWraps = document.querySelectorAll('.reveal-wrap');
+        revealWraps.forEach(wrap => {
+            let img = wrap.querySelector('.reveal-img');
+            
+            // ラッパーのアニメーション（下からフェードイン）
+            gsap.fromTo(wrap, 
+                { opacity: 0, y: 50 },
+                {
+                    opacity: 1, 
+                    y: 0,
+                    duration: 1.2,
+                    ease: "power3.out",
+                    scrollTrigger: {
+                        trigger: wrap,
+                        start: "top 85%", // 画面の85%の位置に来たら発火
+                    }
+                }
+            );
+
+            // 画像自体のズームアウトエフェクト（ダイナミックな演出）
+            if(img) {
+                gsap.to(img, {
+                    scale: 1,
+                    duration: 1.5,
+                    ease: "power2.out",
+                    scrollTrigger: {
+                        trigger: wrap,
+                        start: "top 85%",
+                    }
+                });
+            }
+        });
+
+        // 4. テキストの出現エフェクト
+        const revealTexts = document.querySelectorAll('.reveal-text');
+        revealTexts.forEach(text => {
+            gsap.fromTo(text, 
+                { opacity: 0, y: 30 },
+                {
+                    opacity: 1, 
+                    y: 0,
+                    duration: 1,
+                    ease: "power3.out",
+                    scrollTrigger: {
+                        trigger: text,
+                        start: "top 80%",
+                    }
+                }
+            );
+        });
+    </script>
+</body>
+</html>
